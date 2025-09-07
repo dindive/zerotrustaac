@@ -32,6 +32,7 @@ app.post("/wallet-login", (req, res) => {
   if (!wallet) return res.status(400).json({ error: "No wallet provided" });
 
   req.session.wallet = wallet;
+  global.loggedInWallet = wallet;
   req.session.lastWalletAuth = Date.now();
   res.json({ success: true, message: "Wallet logged in" });
 });
@@ -50,7 +51,7 @@ app.post("/iot-auth", async (req, res) => {
       return res.status(400).json({ error: "Missing RFID or password" });
     }
 
-    const wallet = req.session.wallet;
+    const wallet = global.loggedInWallet;
 
     const isAuth = await contract.authenticate(wallet, rfid, password);
     if (!isAuth) {
