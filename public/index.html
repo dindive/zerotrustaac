@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>IoT Blockchain Auth - Login</title>
+</head>
+
+<body>
+    <h1>Login</h1>
+    <button id="connect">Connect Wallet</button>
+    <script>
+        let walletAddress = null;
+
+        document.getElementById("connect").onclick = async () => {
+            if (window.ethereum) {
+                const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                walletAddress = accounts[0];
+
+                // send to backend
+                await fetch("/wallet-login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ wallet: walletAddress })
+                });
+
+                alert("Wallet connected: " + walletAddress + " — now wait for IoT auth.");
+            } else {
+                alert("MetaMask not found");
+            }
+        };
+    </script>
+</body>
+
+</html>

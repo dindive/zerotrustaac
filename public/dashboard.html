@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <h1>Protected Dashboard</h1>
+    <div id="status"></div>
+    <script>
+        async function check() {
+            const res = await fetch("/check-session");
+            const data = await res.json();
+            if (!data.authenticated) {
+                alert("Re-authentication required: " + data.reason);
+                window.location.href = "/index.html";
+            } else {
+                document.getElementById("status").innerText = "Authenticated as " + data.wallet;
+            }
+        }
+        check();
+    </script>
+</body>
+
+</html>
