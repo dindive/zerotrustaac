@@ -17,6 +17,8 @@
                 window.location.href = "/index.html";
             } else {
                 document.getElementById("status").innerText = "Authenticated as " + data.wallet;
+                document.getElementById("status").innerText += "\nLast full auth: " + data.lastFullAuth;
+                document.getElementById("status").innerText += "\nLast wallet auth: " + data.lastWalletAuth;
             }
         }
         check();

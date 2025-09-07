@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const { ethers } = require("ethers");
+const cors = require("cors");
 const path = require("path");
 
 const contractABI = require("./AuthManagerABI.json");
@@ -9,6 +10,7 @@ const contractAddress = "0xCe2519369b6472bCdbcde62Ec039309E646BD160";
 const ADMIN_WALLET = "0xd67574D6Cee346076B769A6f91f1Af48a55FD116";
 
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
@@ -27,20 +29,39 @@ const provider = new ethers.JsonRpcProvider(
 const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
 // --------- FRONTEND WALLET LOGIN ---------
-app.post("/wallet-login", (req, res) => {
+app.post("/wallet-login", async (req, res) => {
   const { wallet } = req.body;
   if (!wallet) return res.status(400).json({ error: "No wallet provided" });
 
   req.session.wallet = wallet;
   global.loggedInWallet = wallet;
-  req.session.lastWalletAuth = Date.now();
-  res.json({ success: true, message: "Wallet logged in" });
+  const rfid = global.rfidNow || null;
+  const password = global.passwordNow || null;
+
+  const isAuth = await contract.authenticate(wallet, rfid, password);
+  if (!isAuth) {
+    return res.status(401).json({ error: "Authentication failed" });
+  } else {
+    console.log("Wallet logged in:", wallet);
+    req.session.user = {
+      wallet,
+      rfid,
+      lastFullAuth: Date.now(),
+      lastWalletAuth: Date.now(),
+    };
+    return res.json({
+      success: true,
+      message: "Full authentication successful",
+      redirect: "/dashboard.html",
+    });
+    req.session.rfid = rfid;
+  }
 });
 
 // --------- IOT DEVICE AUTH (RFID + PASSWORD) ---------
 app.post("/iot-auth", async (req, res) => {
   try {
-    if (!req.session.wallet) {
+    if (!global.loggedInWallet) {
       return res
         .status(401)
         .json({ error: "No wallet session. Connect MetaMask first." });
@@ -52,23 +73,25 @@ app.post("/iot-auth", async (req, res) => {
     }
 
     const wallet = global.loggedInWallet;
+    global.rfidNow = rfid;
+    global.passwordNow = password;
+    console.log("Authenticating for wallet:", wallet);
 
-    const isAuth = await contract.authenticate(wallet, rfid, password);
-    if (!isAuth) {
-      return res.status(401).json({ error: "Authentication failed" });
-    }
+    // const isAuth = await contract.authenticate(wallet, rfid, password);
+    // if (!isAuth) {
+    //   return res.status(401).json({ error: "Authentication failed" });
+    // }
 
-    req.session.user = {
-      wallet,
-      rfid,
-      lastFullAuth: Date.now(),
-      lastWalletAuth: Date.now(),
-    };
+    // req.session.user = {
+    //   wallet,
+    //   rfid,
+    //   lastFullAuth: Date.now(),
+    //   lastWalletAuth: Date.now(),
+    // };
 
     return res.json({
       success: true,
-      message: "Full authentication successful",
-      redirect: "/dashboard.html",
+      message: "AUTH SEEN",
     });
   } catch (err) {
     console.error(err);
@@ -78,14 +101,17 @@ app.post("/iot-auth", async (req, res) => {
 
 // --------- SESSION CHECK ---------
 app.get("/check-session", (req, res) => {
-  if (!req.session.user)
+  console.log("Checking session for user:", req.session.user);
+  if (!req.session.user.rfid || !req.session.user.wallet)
     return res.json({ authenticated: false, reason: "Not logged in" });
 
   const elapsed = (Date.now() - req.session.user.lastFullAuth) / 1000;
-  if (elapsed > 600) {
+  console.log("Elapsed time since last full auth (s):", elapsed);
+  if (elapsed > 100) {
     req.session.destroy();
     return res.json({ authenticated: false, reason: "Full reauth required" });
-  } else if (elapsed > 300) {
+  } else if (elapsed > 50) {
+    req.session.user.rfid = global.rfidNow || null;
     return res.json({ authenticated: false, reason: "Wallet reauth required" });
   }
 
@@ -109,4 +135,4 @@ app.get("/admin/users", (req, res) => {
   res.json({ users: req.session });
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+app.listen(3330, () => console.log("Server running on http://localhost:3330"));
