@@ -1,26 +1,601 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <style>
+        :root {
+            --bg: #1c1f26;
+            --panel: #2e3440;
+            --panel-alt: #252a34;
+            --text: #e0e6ed;
+            --muted: #c7d0db;
+            --accent: #88c0d0;
+            --accent-2: #5e81ac;
+            --border: #3b4252;
+            --ok: #81a1c1;
+            --warn: #d08770;
+            --danger: #bf616a;
+            --chip: #3b4252;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.5;
+        }
+
+        .protected-wrap {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            margin: 0 0 12px 0;
+            font-size: 22px;
+            color: #fff;
+        }
+
+        .subtext {
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .5);
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .kpi {
+            background: var(--panel-alt);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .kpi .label {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .kpi .value {
+            font-size: 20px;
+            margin-top: 4px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .table th,
+        .table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .table th {
+            color: var(--muted);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            background: var(--chip);
+            color: var(--text);
+        }
+
+        .badge.ok {
+            border-color: rgba(129, 161, 193, .5);
+        }
+
+        .badge.warn {
+            border-color: rgba(208, 135, 112, .5);
+            color: #ffd9c9;
+        }
+
+        .badge.danger {
+            border-color: rgba(191, 97, 106, .6);
+            color: #ffd6da;
+        }
+
+        .mask {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            letter-spacing: .4px;
+            background: #1f232b;
+            padding: 2px 6px;
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+            color: #aeb6c2;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: var(--chip);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 999px;
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .meta .row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed var(--border);
+            padding: 6px 0;
+        }
+
+        .meta .key {
+            color: var(--muted);
+        }
+
+        .meta .val {
+            color: var(--text);
+        }
+
+        .list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .list .when {
+            color: var(--muted);
+            font-size: 12px;
+            display: block;
+        }
+
+        .helper {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .hr {
+            height: 1px;
+            background: var(--border);
+            border: 0;
+            margin: 14px 0;
+        }
+
+        @media (max-width: 960px) {
+            .kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .meta {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+
+        header {
+            background-color: #252a34;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+        }
+
+        header h1 {
+            margin: 0;
+            color: #ffffff;
+        }
+
+        main {
+            padding: 30px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background-color: #2e3440;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+            contain: content;
+            margin-right: 10px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #88c0d0;
+        }
+
+        .info {
+            margin: 8px 0;
+            font-size: 15px;
+        }
+
+        .btn {
+            background-color: #3b4252;
+            border: none;
+            color: #e0e6ed;
+            padding: 10px 18px;
+            margin-top: 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #4c566a;
+        }
+
+        /* Popup modal */
+        #popup {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        #popup-content {
+            background-color: #2e3440;
+            color: #ffffff;
+            margin: 15% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        #popup button {
+            background-color: #434c5e;
+            border: none;
+            color: #ffffff;
+            margin-top: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #popup button:hover {
+            background-color: #5e81ac;
+        }
+
+        .activity-log {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .activity-log li {
+            padding: 6px 0;
+            border-bottom: 1px solid #3b4252;
+            font-size: 14px;
+            color: #d8dee9;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Protected Dashboard</h1>
-    <div id="status"></div>
+    <header>
+        <h1>Protected Dashboard</h1>
+    </header>
+
+    <main>
+        <div class="card" id="auth-info">
+            <h2 style="text-align: center;">Authentication Status</h2>
+            <div id="status"></div>
+        </div>
+
+        <div class="card">
+            <h2>Wallet Information</h2>
+            <p class="info"><strong>Connected Wallet:</strong> <span id="wallet"></span></p>
+            <p class="info"><strong>Last Full Authentication:</strong> <span id="lastFullAuth"></span></p>
+            <p class="info"><strong>Last Wallet Authentication:</strong> <span id="lastWalletAuth"></span></p>
+        </div>
+
+        <div class="card">
+            <h2>System Actions</h2>
+            <button class="btn" onclick="refreshSession()">🔄 Refresh Session</button>
+            <button class="btn" onclick="logout()">🚪 Logout</button>
+        </div>
+
+        <div class="card" id="activity-card" style="display:none;">
+            <h2>Recent Activity</h2>
+            <ul class="activity-log" id="activity-log"></ul>
+        </div>
+    </main>
+
+    <!-- Popup Modal -->
+    <div id="popup">
+        <div id="popup-content">
+            <p id="popup-message"></p>
+            <button onclick="closePopup()">Close</button>
+        </div>
+    </div>
+
     <script>
+        function showPopup(message) {
+            document.getElementById("popup-message").innerText = message;
+            document.getElementById("popup").style.display = "block";
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        function addActivity(message) {
+            const log = document.getElementById("activity-log");
+            const li = document.createElement("li");
+            li.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.prepend(li); // latest on top
+            document.getElementById("activity-card").style.display = "block";
+        }
+
         async function check() {
-            const res = await fetch("/check-session");
-            const data = await res.json();
-            if (!data.authenticated) {
-                alert("Re-authentication required: " + data.reason);
-                window.location.href = "/index.html";
-            } else {
-                document.getElementById("status").innerText = "Authenticated as " + data.wallet;
-                document.getElementById("status").innerText += "\nLast full auth: " + data.lastFullAuth;
-                document.getElementById("status").innerText += "\nLast wallet auth: " + data.lastWalletAuth;
+            try {
+                const res = await fetch("/check-session");
+                const data = await res.json();
+
+                if (!data.authenticated) {
+                    showPopup("Re-authentication required: " + (data.reason || "Session expired"));
+                    setTimeout(() => {
+                        window.location.href = "/index.html";
+                    }, 2500);
+                } else {
+                    // Replace plain text with a styled status card
+                    document.getElementById("status").innerHTML = `
+                    <p  style="text-align: center;">You are authenticated ✅</p>
+            <p  style="text-align: center;"><strong>Session Active:</strong> Protected resources are available.</p>
+           <section class="protected-wrap">
+  <h2 class="section-title">Protected Resources</h2>
+  <p class="subtext">The following artifacts are visible because your session is authenticated. Values are partially masked where appropriate.</p>
+
+  <!-- Quick KPIs -->
+  <div class="kpis" style="margin-bottom:16px;">
+    <div class="kpi">
+      <div class="label">Active Devices</div>
+      <div class="value">4</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Sessions (24h)</div>
+      <div class="value">37</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Failed Auth (24h)</div>
+      <div class="value">3</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Chain Tx (7d)</div>
+      <div class="value">33</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Identity & Access -->
+    <div class="card" style="grid-column: span 6;">
+      <h3>Identity & Access</h3>
+      <div class="meta">
+        <div class="row"><span class="key">Wallet Address</span><span class="val mask">0xA3F1...9cD7</span></div>
+        <div class="row"><span class="key">Role</span><span class="val">Operator</span></div>
+        <div class="row"><span class="key">Last Full Auth</span><span class="val">2025-09-07 21:36:24</span></div>
+        <div class="row"><span class="key">Last Wallet Auth</span><span class="val">2025-09-07 21:36:24</span></div>
+        <div class="row"><span class="key">MFA</span><span class="val"><span class="badge ok">Enabled</span></span></div>
+        <div class="row"><span class="key">Zero-Trust Posture</span><span class="val"><span class="badge ok">Healthy</span></span></div>
+      </div>
+      <p class="helper">Identity attributes are synchronized with the on-chain credential registry every 15 minutes.</p>
+    </div>
+
+    <!-- Secret Material -->
+    <div class="card" style="grid-column: span 6;">
+      <h3>Secret Material (Redacted)</h3>
+      <div class="meta">
+        <div class="row"><span class="key">Session Token</span><span class="val mask">eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...GQ</span></div>
+        <div class="row"><span class="key">API Key</span><span class="val mask">sk_live_51Kf...x7Q</span></div>
+        <div class="row"><span class="key">Device Shared Secret</span><span class="val mask">d41d8cd98f...b204e980</span></div>
+        <div class="row"><span class="key">IPFS Gateway Token</span><span class="val mask">ipfs_2a9...f4b</span></div>
+      </div>
+      <p class="helper">Full values are never rendered in the client. Rotate via the secure admin workflow.</p>
+    </div>
+
+    <!-- Registered IoT Devices -->
+    <div class="card" style="grid-column: span 12;">
+      <h3>Registered IoT Devices</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Device ID</th>
+            <th>RFID Reader</th>
+            <th>Firmware</th>
+            <th>Last Seen</th>
+            <th>Status</th>
+            <th>Tags</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mask">esp32-AC:7B:1F</td>
+            <td>RC522</td>
+            <td>v2.3.1</td>
+            <td>2025-09-07 20:58:12</td>
+            <td><span class="badge ok">Online</span></td>
+            <td>
+              <div class="tags">
+                <span class="tag">HQ-Lab</span>
+                <span class="tag">TLS</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="mask">esp8266-91:DD:02</td>
+            <td>PN532</td>
+            <td>v1.9.8</td>
+            <td>2025-09-07 19:12:44</td>
+            <td><span class="badge warn">Degraded</span></td>
+            <td>
+              <div class="tags">
+                <span class="tag">Field</span>
+                <span class="tag">LTE</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="mask">esp32-S3-13:AA:EF</td>
+            <td>RC522</td>
+            <td>v2.3.1</td>
+            <td>2025-09-07 18:03:07</td>
+            <td><span class="badge ok">Online</span></td>
+            <td>
+              <div class="tags">
+                <span class="tag">Edge</span>
+                <span class="tag">PoE</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="helper">“Degraded” devices should be scheduled for maintenance or firmware rollback.</p>
+    </div>
+
+    <!-- Recent Secure Events -->
+    <div class="card" style="grid-column: span 7;">
+      <h3>Recent Secure Events</h3>
+      <ul class="list">
+        <li>
+          <strong>Full authentication completed</strong>
+          <span class="when">2025-09-07 21:36:24 — source: IoT-RFID + Wallet</span>
+        </li>
+        <li>
+          <strong>Policy update synced</strong>
+          <span class="when">2025-09-07 21:20:03 — source: Admin Contract</span>
+        </li>
+        <li>
+          <strong>RFID badge accepted</strong>
+          <span class="when">2025-09-07 21:18:12 — device: esp32-AC:7B:1F</span>
+        </li>
+        <li>
+          <strong>Wallet re-authenticated</strong>
+          <span class="when">2025-09-07 21:11:49 — address: 0xA3F1...9cD7</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Smart Contracts / On-Chain -->
+    <div class="card" style="grid-column: span 5;">
+      <h3>On-Chain Artifacts</h3>
+      <div class="meta">
+        <div class="row"><span class="key">AuthRegistry (Sepolia)</span><span class="val mask">0x7e3...C12</span></div>
+        <div class="row"><span class="key">Last Tx Hash</span><span class="val mask">0x5f9c...ab42</span></div>
+        <div class="row"><span class="key">Tx Timestamp</span><span class="val">2025-09-07 20:54:09</span></div>
+        <div class="row"><span class="key">State</span><span class="val"><span class="badge ok">Synced</span></span></div>
+      </div>
+      <hr class="hr">
+      <div class="tags">
+        <span class="tag">EIP-712</span>
+        <span class="tag">RBAC</span>
+        <span class="tag">MFA</span>
+        <span class="tag">Zero-Trust</span>
+      </div>
+    </div>
+  </div>
+</section>
+          `;
+
+                    document.getElementById("wallet").innerText = data.wallet;
+                    document.getElementById("lastFullAuth").innerText = formatDate(data.lastFullAuth);
+                    document.getElementById("lastWalletAuth").innerText = formatDate(data.lastWalletAuth);
+
+                    addActivity("User logged in with wallet: " + data.wallet);
+                    addActivity("Session validated successfully.");
+                }
+            } catch (err) {
+                showPopup("Error checking session: " + err.message);
             }
         }
+
+        function refreshSession() {
+            addActivity("Manual session refresh requested.");
+            check();
+        }
+
+        function logout() {
+            fetch("/logout", { method: "POST" })
+                .then(() => {
+                    addActivity("User logged out.");
+                    window.location.href = "/index.html";
+                })
+                .catch(() => {
+                    showPopup("Error logging out.");
+                });
+        }
+
         check();
     </script>
 </body>
