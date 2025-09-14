@@ -6,10 +6,10 @@ const cors = require("cors");
 const path = require("path");
 
 const contractABI = require("./AuthManagerABI.json");
-const contractAddress = "0x430E0f3A043A5654bdB6A744ceE1fB4146906707";
-const ADMIN_WALLET = "0xd67574D6Cee346076B769A6f91f1Af48a55FD116";
+const contractAddress = "0x84AdE0f6602FF75160cE7D83519169de11D95FA1";
+const ADMIN_WALLET = "0xA7fC739f685278DAF0f491823E5D94737ea8B324";
 const ADMIN_PRIVATE_KEY =
-  "847fc919c8cfbb5959be28e6235166ec95f8e5487c6b209a0d58cec4f710e537";
+  "e92c1d4e8943af310e9ee5a44205f07b916d0e15e367b3b2757b53632ab90d2c9"; // Replace with your admin private key
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
